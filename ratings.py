@@ -3,6 +3,7 @@ from typing import List, Dict
 import sys
 
 SCORES_PATH = "scores.txt"
+VALID_RATINGS = [0, 1, 2, 3, 4, 5]
 
 
 def file_path() -> str:
@@ -47,16 +48,35 @@ def print_restaurant_ratings(d: Dict[str, int]):
         print(f"{name} is rated at {d[name]}.")
 
 
+def validate_rating(rating: str) -> bool:
+    """Check if the rating is valid."""
+
+    rating = rating.rstrip()
+    try:
+        rating = int(rating)
+    except ValueError:
+        return False
+
+    if rating in VALID_RATINGS:
+        return True
+    else:
+        return False
+
+
 def user_adds_restaurant_score(d: Dict[str, int]) -> None:
     """This function is called to allow users to input new restaurant names and scores to
     a dict.
 
-    Nothing is returned, the dict is modified"""
+    Nothing is returned, the dict (d) is modified"""
+
     restaurant = input("What is the name of the restaurant you would like to rate? ")
-    rating = input(
-        f"""What rating would you like to give {restaurant}?
-    Please provide a rating between 1 and 5, 5 being the highest rating. """
-    )
+    rating = ""
+
+    while validate_rating(rating) == False:
+        rating = input(
+            f"""What rating would you like to give {restaurant}?
+        Please provide a rating between 1 and 5, 5 being the highest rating. """
+        )
 
     d[restaurant] = rating
     return
