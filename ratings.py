@@ -2,14 +2,15 @@
 from typing import List, Dict
 import sys
 
-SCORES_PATH = 'scores.txt'
+SCORES_PATH = "scores.txt"
+
 
 def file_path() -> str:
     f"""Return the path to the desired .txt file.
-    
+
     If a path is sent in through the CLI, use that one. Otherwise, use
     the one defined by {SCORES_PATH}."""
-    
+
     try:
         file_name = sys.argv[1]
     except IndexError:
@@ -17,7 +18,7 @@ def file_path() -> str:
     return file_name
 
 
-def parse_ratings_dict(file_name: str) -> Dict[str,int]:
+def parse_ratings_dict(file_name: str) -> Dict[str, int]:
     """Parse a txt file and store names and ratings in a dict.
 
     Each line in the file parsed by this this script must have the structure
@@ -28,21 +29,39 @@ def parse_ratings_dict(file_name: str) -> Dict[str,int]:
     names_and_ratings = {}
 
     for line in ratings:
-        name, rating = line.split(':')
+        name, rating = line.split(":")
         names_and_ratings[name] = int(rating[0])
         # The first value following the colon is the rating.
     return names_and_ratings
-    
 
-def print_restaurant_ratings(d: Dict[str,int]):
-    """Print the names and ratings in alphabetical order.
-    """
+
+def print_restaurant_ratings(d: Dict[str, int]):
+    """Print the names and ratings in alphabetical order."""
+
     # Create a list of the keys, sorted in alphabetical order
     sorted_names = sorted(d)
 
     # Loop through the sorted list and print out the restaurant name
-    for name in sorted_names:
-        print(f'{name} is rated at {d[name]}.')
 
-names_and_ratings = parse_ratings_dict(file_path()) 
+    for name in sorted_names:
+        print(f"{name} is rated at {d[name]}.")
+
+
+def user_adds_restaurant_score(d: Dict[str, int]) -> None:
+    """This function is called to allow users to input new restaurant names and scores to
+    a dict.
+
+    Nothing is returned, the dict is modified"""
+    restaurant = input("What is the name of the restaurant you would like to rate? ")
+    rating = input(
+        f"""What rating would you like to give {restaurant}?
+    Please provide a rating between 1 and 5, 5 being the highest rating. """
+    )
+
+    d[restaurant] = rating
+    return
+
+
+names_and_ratings = parse_ratings_dict(file_path())
+user_adds_restaurant_score(names_and_ratings)
 print_restaurant_ratings(names_and_ratings)
