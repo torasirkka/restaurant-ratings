@@ -1,9 +1,32 @@
 """Restaurant rating lister."""
-from typing import List, Dict
+from typing import List, Dict, Tuple
 import sys
+import enum
+
 
 SCORES_PATH = "scores.txt"
-VALID_RATINGS = [0, 1, 2, 3, 4, 5]
+VALID_RATINGS = (0, 1, 2, 3, 4, 5)
+
+
+class States(enum.Enum):
+    # These are the different 'states' the program can be in.
+    INSTANTIATE_DICT = 1
+    WHAT_NEXT = 2
+    ADD_NEW_RESTAURANT = 3
+    DISPLAY_DICT = 4
+    QUIT = 5
+
+
+VALID_STATE_CHOISES = {
+    1: States.ADD_NEW_RESTAURANT,
+    2: States.DISPLAY_DICT,
+    3: States.QUIT,
+}
+VALID_STATE_NUMBERS = {
+    States.ADD_NEW_RESTAURANT: 1,
+    States.DISPLAY_DICT: 2,
+    States.QUIT: 3,
+}
 
 
 def file_path() -> str:
@@ -48,19 +71,16 @@ def print_restaurant_ratings(d: Dict[str, int]):
         print(f"{name} is rated at {d[name]}.")
 
 
-def validate_rating(rating: str) -> bool:
+def validate_number(n: str, valid_ans: Tuple[int]) -> bool:
     """Check if the rating is valid."""
 
-    rating = rating.rstrip()
+    n = n.rstrip()
     try:
-        rating = int(rating)
+        n = int(n)
     except ValueError:
         return False
 
-    if rating in VALID_RATINGS:
-        return True
-    else:
-        return False
+    return n in valid_ans
 
 
 def user_adds_restaurant_score(d: Dict[str, int]) -> None:
@@ -72,7 +92,7 @@ def user_adds_restaurant_score(d: Dict[str, int]) -> None:
     restaurant = input("What is the name of the restaurant you would like to rate? ")
     rating = ""
 
-    while validate_rating(rating) == False:
+    while validate_number(rating, VALID_RATINGS) == False:
         rating = input(
             f"""What rating would you like to give {restaurant}?
         Please provide a rating between 1 and 5, 5 being the highest rating. """
@@ -82,6 +102,64 @@ def user_adds_restaurant_score(d: Dict[str, int]) -> None:
     return
 
 
-names_and_ratings = parse_ratings_dict(file_path())
-user_adds_restaurant_score(names_and_ratings)
-print_restaurant_ratings(names_and_ratings)
+def print_options() -> None:
+    """Prints the options to the user regarding what to do next."""
+    print(
+        f"""
+Please choose one of the following options:
+    - Add new restaurant rating ({VALID_STATE_NUMBERS[States.ADD_NEW_RESTAURANT]})
+    - Print current ratings ({VALID_STATE_NUMBERS[States.DISPLAY_DICT]})
+    - Quit program ({VALID_STATE_NUMBERS[States.QUIT]})
+    """
+    )
+
+
+def get_state():
+    """Asks the user what to do next."""
+
+    # Initiate state with arbitrary invalid state
+    state_n = ""
+    while validate_number(state_n, list(VALID_STATE_CHOISES.keys())) == False:
+        state_n = input("Please indicate the number of the desired option: ")
+        print("")
+
+    return VALID_STATE_CHOISES[int(state_n)]
+
+
+print(
+    f"State {States.ADD_NEW_RESTAURANT}: {States.ADD_NEW_RESTAURANT.value}, {type(States.ADD_NEW_RESTAURANT.value)}"
+)
+# Initialize the variable 'state'
+state = States.INSTANTIATE_DICT
+print("\nWelcome to the restaurant rating program!")
+
+while True:
+
+    if state == States.INSTANTIATE_DICT:
+        # Initialize ratings dict from a file
+
+        names_and_ratings = parse_ratings_dict(file_path())
+        state = States.WHAT_NEXT
+
+    elif state == States.WHAT_NEXT:
+        # Print options of what to do next. Get the users answer.
+
+        print_options()
+        state = get_state()
+
+    elif state == States.ADD_NEW_RESTAURANT:
+        # Ask for a new restaurant name and rating.
+
+        user_adds_restaurant_score(names_and_ratings)
+        state = States.WHAT_NEXT
+
+    elif state == States.DISPLAY_DICT:
+        # Display all current ratings, sorted in alphabetical order.
+
+        print_restaurant_ratings(names_and_ratings)
+        state = States.WHAT_NEXT
+
+    elif state == States.QUIT:
+        # Print exit message and quit program.
+        print("Goodbye!")
+        exit()
